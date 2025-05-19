@@ -8,8 +8,6 @@ This repository serves as a collection of my work throughout APCSP. It includes:
 - A **slideshow** sharing my insights, challenges, and growth in the class.
 - Four **major projects** that highlight my understanding of key computing concepts.
 
-## 📂 Repository Structure
-
 ## 🚀 Projects Overview
 
 1. **Project 1:** [Brief description]
