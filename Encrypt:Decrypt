@@ -1,0 +1,37 @@
+def caesar_cipher(text, shift, mode):
+    result = ''
+    for char in text:
+        if 'a' <= char <= 'z':
+            start = ord('a')
+        elif 'A' <= char <= 'Z':
+            start = ord('A')
+        else:
+            result += char
+            continue
+        shifted_char = chr((ord(char) - start + shift) % 26 + start)
+        result += shifted_char
+    return result
+
+
+def main():
+    text = input("Enter the text: ")
+    while True:
+        try:
+            shift = int(input("Enter the shift value (integer): "))
+            break
+        except ValueError:
+            print("Invalid input. Please enter an integer.")
+
+    while True:
+        mode = input("Enter 'encrypt' or 'decrypt': ").lower()
+        if mode in ('encrypt', 'decrypt'):
+            break
+        else:
+            print("Invalid mode. Please enter 'encrypt' or 'decrypt'.")
+    if mode == 'decrypt':
+        shift = -shift 
+    encrypted_text = caesar_cipher(text, shift, mode)
+    print("Result:", encrypted_text)
+
+if __name__ == "__main__":
+    main()
