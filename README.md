@@ -10,8 +10,8 @@ This repository serves as a collection of my work throughout APCSP. It includes:
 
 ## 🚀 Projects Overview
 
-1. **Project 1:** [Brief description]
-2. **Project 2:** [Brief description]
+1. **Flashcard App:** [Brief description]
+2. **Encrypt/Decrypt ASCII Software:** [Brief description]
 3. **Project 3:** [Brief description]
 4. **Project 4:** [Brief description]
 
