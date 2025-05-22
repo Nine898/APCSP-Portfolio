@@ -1,6 +1,3 @@
-#fix deleting of multiple cards at once
-#fix saving features
-hojhjkhkjhkjlhjljjkhjk
 from tkinter import filedialog, messagebox
 import pygame
 import random
