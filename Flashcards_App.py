@@ -1002,5 +1002,4 @@ def main_menu():
                        break
        clock.tick(FPS)
 
-if __name__ == "__main__":
-   main_menu()
+main_menu()
