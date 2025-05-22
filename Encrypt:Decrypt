@@ -23,12 +23,12 @@ def main():
             print("Invalid input. Please enter an integer.")
 
     while True:
-        mode = input("Enter 'encrypt' or 'decrypt': ").lower()
-        if mode in ('encrypt', 'decrypt'):
+        mode = input("Enter E for encrypt or D for decrypt: ").lower()
+        if mode in ('e', 'd'):
             break
         else:
-            print("Invalid mode. Please enter 'encrypt' or 'decrypt'.")
-    if mode == 'decrypt':
+            print("Invalid mode. Please enter 'E' or 'D'.")
+    if mode == 'd':
         shift = -shift 
     encrypted_text = caesar_cipher(text, shift, mode)
     print("Result:", encrypted_text)
