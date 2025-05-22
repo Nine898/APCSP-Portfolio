@@ -33,5 +33,12 @@ def main():
     encrypted_text = caesar_cipher(text, shift, mode)
     print("Result:", encrypted_text)
 
-if __name__ == "__main__":
+while True:
     main()
+    c = str(input("Would you like to continue? (Y/N) "))
+    if c == "y".lower():
+        continue
+    elif c == "n".lower():
+        break
+    else:
+        print("Please enter a valid option")
