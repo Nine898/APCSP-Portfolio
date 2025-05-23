@@ -23,9 +23,11 @@ Instructions are located after each of the projects names above.
 This course was an incredible journey! I explored foundational computer science concepts, worked on exciting projects, and developed problem-solving skills that will be valuable in the future both throughout life and in my career.
 
 Some key takeaways:
-- [Your first major learning]
-- [A challenge you overcame]
-- [Favorite project and why]
+- **Understanding algorithms and data structures was a major breakthrough for me;** learning how different structures impact efficiency helped me write cleaner, more optimized code.
+
+- **Debugging complex logic errors was a challenge I overcame;** initially, I struggled with identifying subtle mistakes, but through practice and patience, I improved my troubleshooting skills.
+
+- **My favorite project was the flashcard app because it combined multiple programming concepts,** including file handling, user interaction, and randomized learning. It was rewarding to build a tool that improves studying and helps reinforce knowledge dynamically.
 
 Check out the slideshow for a more detailed reflection!
 
