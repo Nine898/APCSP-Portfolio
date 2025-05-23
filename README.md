@@ -11,7 +11,7 @@ This repository serves as a collection of my work throughout APCSP. It includes:
 ## 🚀 Projects Overview
 
 1. **Flashcard App:** [Brief description]
-2. **Encrypt/Decrypt ASCII Software:** This Python program encrypts and decrypts text using the **Caesar cipher**, shifting letters based on a user-defined value.
+2. **Encrypt/Decrypt ASCII Software:** This Python program encrypts and decrypts text using the **caesar cipher**, shifting letters based on a user-defined value.
 3. **Project 3:** [Brief description]
 4. **Project 4:** [Brief description]
 
