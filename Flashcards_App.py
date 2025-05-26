@@ -876,47 +876,169 @@ def display_flashcards_text(flashcards):
 
 
 def save_flashcards_to_file(flashcards):
-    pygame.event.clear()
+    # Define our UI states.
+    state = "select_file"   # Other states: "select_mode", "new_file", "save_file", "done"
+    selected_file = None
+    file_path = None
+    save_mode = None  # "a" for append, "w" for overwrite
 
-    screen.fill(WHITE)
-    title_surface = BIG_FONT.render("Save Flashcards as Text File", True, BLACK)
-    screen.blit(title_surface, (WIDTH//2 - title_surface.get_width()//2, 50))
-
-    # Get existing .txt files
+    # Gather existing .txt files.
     txt_files = [f for f in os.listdir() if f.endswith(".txt")]
-
     if txt_files:
-        # Show existing files
-        file_path = filedialog.asksaveasfilename(
-            defaultextension=".txt",
-            filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")],
-            initialfile=txt_files,
-            title="Save Flashcards as Text File"
-        )
+        options = txt_files + ["Create New File"]
     else:
-        # Only offer to create a new file
-        file_path = filedialog.asksaveasfilename(
-            defaultextension=".txt",
-            filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")],
-            title="Create New Flashcard Text File"
-        )
+        options = ["Create New File"]
 
-    if file_path:
-        confirm = messagebox.askokcancel(
-            "Confirm Save",
-            f"This will save your flashcards to '{os.path.basename(file_path)}'.\nAre you sure you want to continue?"
-        )
-        if confirm:
+    def get_new_file_name(prompt):
+        # Increase the input_box height to allow multiline wrapping.
+        input_box = pygame.Rect(WIDTH // 4, HEIGHT // 2, WIDTH // 2, 100)
+        user_text = ""
+        active = True
+        while active:
+            events = pygame.event.get()
+            for event in events:
+                check_quit_event(event)
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        active = False
+                    elif event.key == pygame.K_BACKSPACE:
+                        user_text = user_text[:-1]
+                    else:
+                        user_text += event.unicode
+
+            screen.fill(WHITE)
+            prompt_surface = FONT.render(prompt, True, BLACK)
+            prompt_rect = prompt_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 50))
+            screen.blit(prompt_surface, prompt_rect)
+
+            # Draw the input box.
+            pygame.draw.rect(screen, BLACK, input_box, 2)
+
+            # Wrap the text if it is too long.
+            # We subtract some padding (10px) to avoid drawing outside the box.
+            wrapped_lines = wrap_text(user_text, FONT, input_box.width - 10)
+            line_height = FONT.get_height()
+            for i, line in enumerate(wrapped_lines):
+                line_surface = FONT.render(line, True, BLACK)
+                screen.blit(line_surface, (input_box.x + 5, input_box.y + 5 + i * line_height))
+
+            # Determine whether to draw the blinking cursor.
+            cursor_visible = (pygame.time.get_ticks() // 500) % 2 == 0
+            if cursor_visible:
+                if wrapped_lines:
+                    last_line = wrapped_lines[-1]
+                else:
+                    last_line = ""
+                # Compute cursor position at end of last line.
+                cursor_x = input_box.x + 5 + FONT.size(last_line)[0]
+                cursor_y = input_box.y + 5 + (len(wrapped_lines) - 1) * line_height
+                # Do not let the cursor go past the right edge.
+                if cursor_x > input_box.right - 10:
+                    cursor_x = input_box.right - 10
+                pygame.draw.line(screen, BLACK, (cursor_x, cursor_y), (cursor_x, cursor_y + line_height), 2)
+
+            pygame.display.flip()
+            clock.tick(FPS)
+        return user_text
+
+    running = True
+    while running:
+        events = pygame.event.get()
+        for event in events:
+            check_quit_event(event)
+        screen.fill(WHITE)
+
+        # Draw header text.
+        header_surface = BIG_FONT.render("Save Flashcards as Text File", True, BLACK)
+        header_rect = header_surface.get_rect(center=(WIDTH // 2, 50))
+        screen.blit(header_surface, header_rect)
+
+        # STATE: select_file – provide buttons for existing text files and new file creation.
+        if state == "select_file":
+            instr_surface = FONT.render("Select a file to save your flashcards:", True, BLACK)
+            instr_rect = instr_surface.get_rect(center=(WIDTH // 2, 110))
+            screen.blit(instr_surface, instr_rect)
+
+            button_width = 400
+            button_height = 50
+            margin = 20
+            start_y = 150
+            file_buttons = []
+            for i, option in enumerate(options):
+                x = (WIDTH - button_width) // 2
+                y = start_y + i * (button_height + margin)
+                button = create_button(option, x, y, button_width, button_height)
+                file_buttons.append(button)
+            draw_button_list(file_buttons)
+
+            for event in events:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+                    for button in file_buttons:
+                        if button["rect"].collidepoint(mouse_pos):
+                            # "Create New File" advances to text input.
+                            if button["text"] == "Create New File":
+                                state = "new_file"
+                            else:
+                                selected_file = button["text"]
+                                state = "select_mode"
+
+        # STATE: select_mode – for an existing file, ask if the user wishes to append or overwrite.
+        elif state == "select_mode":
+            selected_msg = FONT.render(f"Selected File: {selected_file}", True, BLACK)
+            selected_rect = selected_msg.get_rect(center=(WIDTH // 2, 110))
+            screen.blit(selected_msg, selected_rect)
+
+            mode_instr = FONT.render("Choose mode:", True, BLACK)
+            mode_instr_rect = mode_instr.get_rect(center=(WIDTH // 2, 150))
+            screen.blit(mode_instr, mode_instr_rect)
+
+            # Create a pair of buttons: Append and Overwrite.
+            left_rect, right_rect = create_button_pair(220, width=150, height=50, spacing=100)
+            append_button = {"rect": left_rect, "text": "Append", "color": GRAY}
+            overwrite_button = {"rect": right_rect, "text": "Overwrite", "color": GRAY}
+            draw_button_list([append_button, overwrite_button])
+            for event in events:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+                    if left_rect.collidepoint(mouse_pos):
+                        save_mode = "a"
+                        file_path = selected_file
+                        state = "save_file"
+                    elif right_rect.collidepoint(mouse_pos):
+                        save_mode = "w"
+                        file_path = selected_file
+                        state = "save_file"
+
+        # STATE: new_file – prompt the user for a new filename.
+        elif state == "new_file":
+            file_name = get_new_file_name("Enter new file name (without extension):")
+            # Use a default name if none is entered.
+            if file_name.strip() == "":
+                file_name = "flashcards"
+            # Ensure the filename ends with .txt.
+            if not file_name.endswith(".txt"):
+                file_name += ".txt"
+            file_path = file_name
+            save_mode = "w"
+            state = "save_file"
+
+        # STATE: save_file – actually open the file and write the flashcards.
+        elif state == "save_file":
             try:
-                with open(file_path, "w", encoding="utf-8") as f:
+                with open(file_path, save_mode, encoding="utf-8") as f:
                     for card in flashcards:
                         f.write(f"Front: {card.front}\nBack:  {card.back}\n\n")
-                messagebox.showinfo("Success", "Flashcards saved successfully!")
+                show_feedback("Flashcards saved successfully!", duration=1500, color=GREEN)
             except Exception as e:
-                messagebox.showerror("Error", f"An error occurred while saving:\n{e}")
+                show_feedback(f"Error: {e}", duration=2000, color=RED)
+            state = "done"
 
-    pygame.display.flip()
-    clock.tick(FPS)
+        pygame.display.flip()
+        clock.tick(FPS)
+
+        if state == "done":
+            running = False
 
 
 def save_flashcards_mode(flashcards):
@@ -946,6 +1068,7 @@ def save_flashcards_mode(flashcards):
                     save_flashcards_to_file(flashcards)
                     active = False   
         clock.tick(FPS)
+
 
 def main_menu():
    flashcards = []
