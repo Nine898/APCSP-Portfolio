@@ -13,7 +13,7 @@ This repository serves as a collection of my work throughout APCSP. It includes:
 1. **Flashcard App:** This Python program helps users create and review flashcards for studying, storing questions and answers for efficient learning.
 2. **Encrypt/Decrypt ASCII Software:** This Python program encrypts and decrypts text using the **caesar cipher**, shifting letters based on a user-defined value.
 3. **Password Generator:** This Python program generates a randomized, strong password using user-provided details, ensuring variability with uppercase letters and digits for security.
-4. **AI Helpline Chatbot:** This Python program creates a compassionate chatbot that engages users in supportive conversations, detects suicidal thoughts and harmful language through keyword analysis, offers personalized coping strategies based on age and gender, and provides urgent crisis intervention to promote emotional well-being and safety.
+4. **Helpline Chatbot:** This Python program creates a compassionate chatbot that engages users in supportive conversations, detects suicidal thoughts and harmful language through keyword analysis, offers personalized coping strategies based on age and gender, and provides urgent crisis intervention to promote emotional well-being and safety.
 
 Each project folder contains the necessary files, code, and documentation for running the code. 
 Instructions are located after each of the projects names above.
