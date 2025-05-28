@@ -2,58 +2,21 @@ import re
 
 def get_user_input(prompt):
     """
-    Prompt the user for input over multiple lines.
-    The user types one or more lines and presses Enter twice when finished.
-    All text is concatenated and converted to lowercase for simplified keyword matching.
+    Collects multi-line user input (press Enter twice to finish).
     """
     print(prompt)
     lines = []
     while True:
         line = input()
-        if line.strip() == "":  # Press Enter twice when done.
+        if line.strip() == "":
             break
         lines.append(line)
     return " ".join(lines).lower()
 
-
-def check_and_notify_threats(user_message):
-    """
-    Checks the user's message for violent threats toward others as well as declarations of self-harm.
-    
-    • If a phrase such as "i will kill", "i am going to bomb", "i will attack", "i will hurt", or "i will eat" is detected,
-      the bot prints that the police have been notified.
-    • If the user states "i will hurt myself", the bot prints that the suicide helpline has been notified.
-    
-    Returns a string with one or more notifications (if any).
-    """
-    notifications = []
-    # Check for violent intent toward others.
-    pattern_violent = r'\bi (will|am going to) (kill|bomb|attack|hurt|eat)\b'
-    if re.search(pattern_violent, user_message):
-        notifications.append("Alert: For the safety of others, the police have been notified of your statement.")
-        
-    # Check for self-harm declarations.
-    pattern_selfharm = r'\bi (will|am going to) hurt myself\b'
-    if re.search(pattern_selfharm, user_message):
-        notifications.append("Alert: The suicide helpline has been notified of your statement. Please call them immediately.")
-        
-    return "\n".join(notifications)
-
-
 def analyze_user_message(user_message, age, gender):
-    """
-    Processes the user's message and generates a tailored, therapeutic response.
-    
-    The bot is designed to sound compassionate like a human therapist.
-    In addition to handling topics such as sadness, anxiety, and loneliness,
-    it now responds to greetings ("hello", "hi", "hey"), feelings of tiredness or being upset,
-    and prompts the user to describe their situation in detail.
-    """
-    responses = []
-    
-    # Determine life stage based on age.
+    # Determine age group.
     category = "adult"
-    if age.isdigit():
+    try:
         age_int = int(age)
         if age_int < 13:
             category = "child"
@@ -61,113 +24,219 @@ def analyze_user_message(user_message, age, gender):
             category = "teen"
         elif age_int >= 65:
             category = "senior"
+    except Exception:
+        category = "adult"
     
-    # Define calming activities by category.
+    gender = gender.strip().lower()
+    
+    # A dictionary of calming or alternative activities by age.
     calming_activities = {
-        "child": ["drawing or coloring", "listening to soothing music", "playing with a pet"],
-        "teen": ["journaling your thoughts", "taking a brisk walk", "listening to relaxing tunes"],
-        "adult": ["practicing mindfulness meditation", "doing light exercise", "enjoying a warm herbal tea"],
-        "senior": ["reading a comforting book", "gentle stretching", "listening to nature sounds"]
+        "child": ["drawing", "singing", "playing outside"],
+        "teen": ["journaling", "listening to music", "chatting with a close friend"],
+        "adult": ["mindfulness meditation", "deep breathing", "taking a brisk walk"],
+        "senior": ["gentle stretching", "reading", "listening to soft music"]
     }
-    
-    # Handle simple greetings.
-    if user_message.strip() in ["hello", "hi", "hey"]:
-        responses.append("Hello there! I'm glad you reached out today. How are you feeling at this moment? Please share a bit about what's on your mind.")
-    
-    # Handle expressions of tiredness.
-    if "tired" in user_message:
-        responses.append("I sense you're feeling tired. Could you tell me if this is physical exhaustion, emotional fatigue, or perhaps both? Sharing more details might help me support you better.")
-    
-    # Handle expressions of being upset.
-    if "upset" in user_message:
-        responses.append("It sounds like you're feeling upset. Would you be comfortable sharing what might be causing these feelings? The more details you provide, the better I can understand and help.")
-    
-    # Handle requests for coping strategies.
-    if any(keyword in user_message for keyword in ["coping", "cope", "coping strategies", "manage stress", "dealing with stress"]):
-        if category == "child":
-            responses.append("For someone your age, creative activities like drawing, singing, or playing a game can often be a helpful outlet.")
-        elif category == "teen":
-            responses.append("Many teenagers find journaling or talking to a friend, as well as listening to good music, to be very effective ways to cope. Have you tried any of these?")
-        elif category == "adult":
-            responses.append("Many adults find that deep breathing techniques—for example, the 4-7-8 method—or taking a short walk can help manage stress. Would you consider trying one?")
-        elif category == "senior":
-            responses.append("For seniors, gentle stretching or listening to nature sounds can often bring comfort. Perhaps one of these might help you relax.")
-    
-    # Address expressions of suicidal ideation or self-harm.
-    if any(phrase in user_message for phrase in ["suicidal", "kill myself", "end my life"]):
-        responses.append("I understand that you're in deep distress. It might help to immediately speak with a trusted person or mental health professional who can offer guidance.")
-    
-    # Address sadness.
-    if any(keyword in user_message for keyword in ["sad", "depressed", "unhappy", "miserable"]):
-        responses.append("It sounds like you're feeling very low. Sometimes engaging in activities like {} can help lift your mood, even if just slightly.".format(", ".join(calming_activities[category])))
-        responses.append("Could you please describe what might be making you feel this way? Sharing more details can be an important step toward feeling better.")
-    
-    # Address anxiety.
-    if any(keyword in user_message for keyword in ["anxious", "worried", "panic", "nervous"]):
-        responses.append("Anxiety can be very overwhelming. Have you tried grounding techniques such as {}? Sometimes focusing on your breathing or surroundings might provide a moment of calm.".format(", ".join(calming_activities[category])))
-        responses.append("What do you think triggers these feelings? Knowing more might help in finding strategies to manage them.")
-    
-    # Address loneliness.
-    if any(keyword in user_message for keyword in ["lonely", "alone", "isolated"]):
-        responses.append("Feeling alone can be extremely hard. Even a brief conversation about your day can help ease that isolation. What has been on your mind lately?")
-    
-    # Address religion or spirituality.
-    if "religion" in user_message or any(word in user_message for word in ["faith", "god", "spiritual"]):
-        responses.append("Spiritual and religious beliefs can offer a great source of comfort during difficult times.")
-        responses.append("Could you share which faith or spiritual practice you identify with? Sometimes traditions or prayer can be very supportive.")
-    elif any(word in user_message for word in ["christian", "muslim", "hindu", "buddhist", "jewish"]):
-        responses.append("Your faith tradition may offer meaningful practices that bring comfort. Is there a particular custom or prayer that helps you when times are tough?")
-    
-    # Default case for overly vague messages.
-    if not responses:
-        responses.append("I'm here to listen and truly care about what you're going through. Could you please describe in more detail what's troubling you? The more specifics you provide, the better I can help.")
-    
-    return "\n\n".join(responses)
 
+    # Dictionary for storing detected responses.
+    detected = {}
+    alerts = []
+    # Check self-harm expressions. Expanded to include "kill myself" and "end my life".
+    if re.search(r'\bi (will|am going to) (kill myself|hurt myself|end my life)\b', user_message):
+        alerts.append(
+            "Your message indicates an intense urge to harm yourself. I care deeply about you, "
+            "and it sounds like you're in crisis. I've just contacted immediate crisis support (dialed 988) "
+            "so that help can reach you as soon as possible. Sometimes sharing what you’re experiencing can be a first step toward finding safety. "
+            "Are you in a safe place right now?"
+        )
+    # Check expressions of harm toward others – making sure not to capture self-harm.
+    elif re.search(r'\bi (will|going to|have) (kill|bomb|attack|hurt)(?! myself\b)', user_message):
+        alerts.append(
+            "I'm really concerned by your words, which suggest you might harm others. Such actions can have irreversible consequences, both for you and for those around you. "
+            "For your safety and the safety of others, I've contacted emergency services (dialed 911). "
+            "I care about you and want to understand what's behind these thoughts. Would you share what’s leading you to these feelings? Are you safe right now?"
+        )
+    if alerts:
+        detected["notification"] = " ".join(alerts)
+    # --- Define Topic Responses for Other Areas ---
+    topics = {
+        "greeting": {
+            "keywords": ["hello", "hi", "hey"],
+            "response": lambda cat, gen: "Hello! How are you feeling? I'd love to know what's on your mind."
+        },
+        "tiredness": {
+            "keywords": ["tired"],
+            "response": lambda cat, gen: "It seems you're feeling tired. Is it physical exhaustion, emotional fatigue, or both?"
+        },
+        "upset": {
+            "keywords": ["upset", "angry", "frustrated"],
+            "response": lambda cat, gen: "Feeling upset can be really challenging. Would you like to share what's causing these emotions?"
+        },
+        "coping": {
+            "keywords": ["coping", "cope", "stress", "dealing with emotions"],
+            "response": lambda cat, gen: (
+                "For coping, " +
+                ("drawing, singing, or playing" if cat == "child" else
+                 "journaling, talking to a friend, or listening to music" if cat == "teen" else
+                 "mindfulness, deep breathing, or taking a walk" if cat == "adult" else
+                 "gentle stretching, reading, or listening to soft music")
+            ) + " might help."
+        },
+        "suicidal": {
+            "keywords": [
+                "suicidal", "kill myself", "hurt myself", "end my life", "can't go on", "no point in living",
+                "die", "wish i wasn't here", "hopeless", "don't want to wake up"
+            ],
+            "response": lambda cat, gen: (
+                "I'm really sorry you’re feeling so much pain. It sounds like these thoughts are overwhelming. "
+                "Please know that harming yourself is not the solution—even though it might feel like it right now. "
+                "I've reached out for crisis support (dialed 988) because your life matters, and you deserve help. "
+                "Would you be willing to talk about what’s going on?"
+            )
+        },
+        "sadness": {
+            "keywords": [
+                "sad", "depressed", "unhappy", "miserable", "down", "heartbroken",
+                "numb", "empty", "worthless", "lost", "crying", "can't stop crying"
+            ],
+            "response": lambda cat, gen: (
+                "It sounds like you're experiencing deep sadness. " +
+                ("Talking with a parent or teacher might help if you're younger, " if cat in ["child", "teen"]
+                 else "Sharing your feelings with someone you trust may provide relief.")
+            )
+        },
+        "anxiety": {
+            "keywords": [
+                "anxious", "nervous", "worried", "panic", "fearful", "stressed",
+                "tense", "overthinking", "racing thoughts", "paranoid", "dread", "on edge"
+            ],
+            "response": lambda cat, gen: (
+                "Anxiety can be extremely overwhelming. " +
+                ("Sometime talking with someone you trust can help ease those worries." if cat in ["child", "teen"]
+                 else "Practicing mindfulness, deep breathing, or a brisk walk might help calm your thoughts.")
+            )
+        },
+        "loneliness": {
+            "keywords": [
+                "lonely", "alone", "isolated", "abandoned", "left out", "invisible",
+                "disconnected", "ignored", "no one cares", "nobody loves me", "forgotten"
+            ],
+            "response": lambda cat, gen: "Feeling disconnected hurts. Sometimes reaching out—even just a friend—can help."
+        },
+        "medication": {
+            "keywords": [
+                "meds", "medication", "not taking", "stopped taking", "forgot my meds",
+                "haven't taken my pills", "off my meds", "don't need meds"
+            ],
+            "response": lambda cat, gen: "Not taking your medication regularly can be concerning. Have you spoken with your healthcare provider about it?"
+        },
+        "eating": {
+            "keywords": [
+                "not eating", "stopped eating", "lost my appetite", "skipping meals",
+                "don't want food", "can't eat", "food makes me sick", "starving"
+            ],
+            "response": lambda cat, gen: "Changes in your eating habits can be serious. Could you share what might be affecting your appetite?"
+        },
+        "hygiene": {
+            "keywords": [
+                "bad hygiene", "not showering", "don't care about my appearance",
+                "not taking care of myself", "neglecting hygiene", "haven't brushed my teeth", "haven't changed clothes"
+            ],
+            "response": lambda cat, gen: "Neglecting personal hygiene might suggest you're feeling overwhelmed. Would discussing what’s contributing help?"
+        },
+        "academic": {
+            "keywords": ["homework", "exam", "test", "assignment", "grade", "study", "class", "project", "school"],
+            "response": lambda cat, gen: (
+                "School stress can be challenging. " +
+                ("Talking to a teacher or parent might clarify your doubts." if cat in ["child", "teen"]
+                 else "Discussing issues with peers or instructors could alleviate the pressure.")
+            )
+        },
+        "classmate": {
+            "keywords": ["classmate", "bully", "bullying", "peer", "exclusion", "conflict", "teasing"],
+            "response": lambda cat, gen: (
+                "Conflicts with classmates can be very difficult. " +
+                ("Speaking with a trusted teacher or counselor might help." if cat in ["child", "teen"]
+                 else "Addressing issues calmly with a mediator might be beneficial.")
+            )
+        },
+        "work": {
+            "keywords": ["boss", "job", "deadline", "promotion", "coworker", "work", "overtime", "workload"],
+            "response": lambda cat, gen: (
+                "Work stress can be overwhelming. " +
+                ("Talking to your supervisor or HR may help set clearer boundaries." if cat == "adult"
+                 else "Sharing your concerns with someone you trust might ease the stress.")
+            )
+        },
+        "friend": {
+            "keywords": ["friend", "betray", "argument", "disagreement", "misunderstanding", "let down", "conflict", "falling out"],
+            "response": lambda cat, gen: (
+                "Friendship conflicts can hurt deeply. " +
+                ("An open conversation might help resolve misunderstandings." if cat != "child"
+                 else "Talking to a trusted friend or adult could help clear things up.")
+            )
+        },
+        "romantic": {
+            "keywords": ["partner", "relationship", "dating", "romantic", "love", "breakup", "heartache", "divorce", "infidelity"],
+            "response": lambda cat, gen: (
+                "Relationship challenges are deeply personal. " +
+                ("Expressing your feelings and even considering counseling might be helpful." if cat in ["adult", "senior"]
+                 else "Discussing your experiences with someone close to you may ease the pain.")
+            )
+        }
+    }
+    group_priority = {
+        "greeting": ["greeting"],
+        "mood": ["tiredness", "upset"],
+        "mental": ["suicidal", "sadness", "anxiety", "loneliness"],
+        "self_care": ["coping", "medication", "eating", "hygiene"],
+        "situational": ["academic", "classmate", "work", "friend", "romantic"]
+    }
+    # Special-case: if the user message exactly matches a greeting word.
+    if user_message.strip() in ["hello", "hi", "hey"]:
+        detected["greeting"] = topics["greeting"]["response"](category, gender)
+    else:
+        # Process each group by priority order.
+        for group, topics_list in group_priority.items():
+            for topic in topics_list:
+                for keyword in topics[topic]["keywords"]:
+                    if keyword in user_message:
+                        # Only add the first match found in each group.
+                        detected[group] = topics[topic]["response"](category, gender)
+                        break
+                if group in detected:
+                    break
+    # Fallback response if nothing was detected.
+    if not detected:
+        detected["default"] = "I'm here to listen. Could you describe in more detail what you're experiencing?"
+    # Order final responses with notifications at the top.
+    response_order = ["notification", "greeting", "mood", "mental", "self_care", "situational", "default"]
+    final_response = "\n\n".join(detected[key] for key in response_order if key in detected)
+    
+    return final_response
 
 def start_conversation(name, age, gender):
     """
-    Runs the conversation loop using the user's details for personalized responses.
-    
-    Each message is checked for violent or self-harm statements (in which case notifications are simulated)
-    and then analyzed, with thoughtful and specific prompts being provided.
-    
-    The conversation continues until the user types "exit" or "quit".
+    Runs the main conversation loop for the chatbot.
     """
-    print(f"\nThank you, {name}. You can type 'exit' or 'quit' at any point to end our conversation.\n")
-    
+    print(f"\nThank you, {name}. You can type 'exit' or 'quit' anytime.\n")
     while True:
         user_message = get_user_input("You (press Enter twice when done): ")
-        
         if user_message.strip() in ["exit", "quit"]:
-            print(f"\nThank you for spending time with me, {name}. Remember, you matter greatly, and I'm here whenever you need to talk.")
+            print(f"\nThank you for talking, {name}. Remember, you matter—and I'm here whenever you need support.")
             break
-        
-        # Check for violent or self-harm threats and display simulated notifications.
-        notifications = check_and_notify_threats(user_message)
-        if notifications:
-            print("\n" + notifications + "\n")
-        
-        # Generate and display a tailored response.
         response = analyze_user_message(user_message, age, gender)
         print("\n" + response + "\n")
 
-
 def sad_chatbot():
     """
-    Greets the user, collects their full name, age, and gender, then initiates a personalized conversation.
-    
-    The bot is designed to be as empathetic and detailed as a caring therapist, guiding the user to share specifics of their issue.
+    Greets the user, collects essential information, and starts the conversation loop.
     """
-    print("Hello, I'm here to listen and support you as best as I can.")
+    print("Hello, I'm here to listen and support you.")
+    name = input("\nWhat's your full name? ")
+    age = input("\nHow old are you? ")
+    gender = input("\nWhat's your gender or preferred identification? ")
     
-    name = input("\nWhat is your full name (first and last)? ")
-    age = input("\nMay I ask how old you are? ")
-    gender = input("\nCould you also share your gender or preferred identification? ")
-    
-    print(f"\nThank you for providing that information, {name}. I'll do my best to tailor my responses to your needs.")
+    print(f"\nThank you, {name}. I'll do my best to tailor my responses to your needs.")
     start_conversation(name, age, gender)
 
-
-# Start the chatbot conversation when the script runs.
-sad_chatbot()
+sad_chatbot() # Start the chatbot conversation when the script runs.
